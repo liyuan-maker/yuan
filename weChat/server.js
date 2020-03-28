@@ -31,6 +31,6 @@ io.on("connection", socket => {
         io.emit('user disconnected');
     });
 })
-http.listen(5000, () => {
-    console.log("the server on localhost:5000");
+http.listen(5500, () => {
+    console.log("the server on localhost:5500");
 })
