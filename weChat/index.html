@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        body {
+            background-color: #eee;
+        }
+
+        .room {
+            width: 100%;
+            height: auto;
+            display: none;
+        }
+
+        .title {
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            width: 100%;
+            height: 40px;
+            text-align: center;
+            font-size: 16px;
+            line-height: 40px;
+            background-color: lightblue;
+            color: #fff;
+            z-index: 100;
+        }
+
+        .footer {
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+            height: 40px;
+
+        }
+
+        .footer input {
+            width: 80%;
+            height: 100%;
+            outline: none;
+            border: 1px solid #eee;
+            box-sizing: border-box;
+        }
+
+        .footer input:focus {
+            border: 1px solid #5296ff;
+        }
+
+        .footer button {
+            width: 20%;
+            height: 100%;
+            text-align: center;
+            line-height: 40px;
+            color: #fff;
+            background: linear-gradient(-30deg, #47B8EA 0%, #037AC6 100%);
+            outline: none;
+            border: none;
+            box-sizing: border-box;
+        }
+
+        .content {
+            position: relative;
+            top: 40px;
+            width: 100%;
+            padding: 30px 0px 40px 0px;
+            height: auto;
+            box-sizing: border-box;
+        }
+
+        p {
+            margin-left: 15%;
+            word-wrap: break-word;
+            width: 80%;
+            line-height: 30px;
+            margin-top: 20px;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="room">
+        <div class="title">聊天室</div>
+        <div class="content"></div>
+        <div class="footer">
+            <input type="text"><button class="btn">发送</button>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io.connect("/");
+        var room = document.getElementsByClassName("room")[0];
+        var btn = document.getElementsByClassName("btn")[0];
+        var input = document.getElementsByTagName("input")[0];
+        var content = document.getElementsByClassName("content")[0];
+        var alias = window.prompt("请输入昵称");
+        if (alias) {
+            room.style.display = "block";
+        }
+       
+        btn.onclick = getVal;
+        socket.on("message", function (val) {
+            console.log(val);
+            var p = document.createElement("p");
+            p.style.background = "#fff";
+            p.style.borderRadius = "5px";
+            p.innerText = val;
+            content.appendChild(p);
+        });
+        socket.on("connect", () => {
+            console.log("连接成功");
+            join();
+        })
+        socket.on("disconnect", () => {
+            console.log("断开连接");
+            leave();
+        })
+        input.onkeydown = function (e) {
+            if (e.keyCode == 13) {
+                getVal()
+            }
+        }
+        function getVal() {
+            var val = input.value;
+            if (!val) {
+                alert("未输入内容")
+                return;
+            }
+            socket.send(val);
+            input.value = '';
+        }
+        //向服务器端发送自定义消息
+        function join() {
+            if(alias){
+                socket.emit("join", alias);
+            }
+          
+        }
+
+        function leave() {
+            socket.emit('leave', alias);
+        }
+        //收到有新的人加入房间的信息
+        socket.on('system', function (data) {
+            var p = document.createElement("p");
+            p.innerText = data;
+            content.appendChild(p);
+        });
+        //收到我离开的信息
+        socket.on('leavehint', function (data) {
+            var p = document.createElement("p");
+            p.innerText = data;
+            content.appendChild(p);
+        });
+    </script>
+</body>
+
+</html>
