@@ -17,7 +17,7 @@ io.on("connection", socket => {
     //离开房间;
     socket.on('leave', function (data) {
         //用户离开房间
-       // console.log(data);
+        console.log(data);
         socket.leave(roomId);
         //向此用户发送信息
         socket.emit('leavehint', data + '离开了房间')
